@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>留言本</title>
+	<link rel="stylesheet" href="./css/bootstrap.min.css">
+</head>
+<body>
+	<div class="container">
+		<div class="jumbotron">
+		  	<h1 class="text-center">LiZn</h1>
+		</div>
+		<form>
+		  	<div class="form-group">
+			    <label for="exampleInputEmail1">姓名</label>
+			    <input type="text" class="form-control" id="xingming"  placeholder="姓名">
+		  	</div>
+		  	<div class="form-group">
+			    <label for="exampleInputPassword1">遗言</label>
+			    <textarea class="form-control" id="yiyan" rows="3"></textarea>
+		  	</div>
+		  	<button type="button" id="tijiao" class="btn btn-success btn-lg btn-block">提交</button>
+		</form>		
+		<div class="alert alert-success" style="display:none" id="jinggao" role="alert">提交成功</div>
+		<div class="alert alert-danger" style="display:none" id="shibai" role="alert">提交失败</div>
+	</div>
+	<div class="container">
+		<div class="list" style="margin-top:50px"></div>
+	</div>
+	<script type="text/template" id="moban">
+		<div class="list-group">
+		  	<a href="#" class="list-group-item active">
+			    <h4 class="list-group-item-heading">{{= xingming }}</h4>
+			    <p class="list-group-item-text">{{= yiyan }}</p>
+		  	</a>
+		</div>
+	</script>
+	<script src="https://cdn.bootcss.com/jquery/1.12.2/jquery.js"></script>
+	<script src="./js/underscore.js"></script>
+	<script>
+	$("#tijiao").click(function(){
+		$("#jinggao,#shibai").fadeOut()
+		$.ajax({
+			url:"/tijiao",
+			method:"POST",
+			async:true,
+			data:{
+				name:$("#xingming").val(),
+				yiyan:$("#yiyan").val()
+			},
+			success:function(res){
+				if(res.status){
+					$("#jinggao").fadeIn()
+				}else{
+					$("#shibai").fadeIn()
+				}
+			}
+		})		
+	});
+	$.ajax({
+		url:"/du",
+		method:"POST",
+		success:function(res){
+			var json = res.request;
+			var complited = _.template($("#moban").html());
+			for(var i=0;i<json.length;i++){
+				console.log(json)
+				var html = complited({"xingming":json[i].name,"yiyan":json[i].text});
+				$(".list").append($(html))
+			}			
+		}
+	});
+
+	</script>
+</body>
+</html>
