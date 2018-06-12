@@ -3,6 +3,7 @@ const ejs = require("ejs");
 const consolidate = require("consolidate");
 const bodyParse = require("body-parser");
 const db = require("./models/db");
+const ObjectId = require("mongodb").ObjectID
 const server = express();
 
 //模板
@@ -17,7 +18,11 @@ server.get("/",(req,res)=>{
 	res.render("index.ejs",{})
 })
 server.post("/tijiao",(req,res)=>{
-	db.insertOne("liu","yan",{"name":req.body.name,"text":req.body.yiyan},(err,result)=>{
+	db.insertOne("liu","yan",{
+		"name":req.body.name,
+		"text":req.body.yiyan,
+		"shijian":new Date()
+	},(err,result)=>{
 		if(err){
 			res.send({"status":0,data:"失败"}).end()
 		}else{
@@ -26,7 +31,8 @@ server.post("/tijiao",(req,res)=>{
 	})
 })
 server.post("/du",(req,res)=>{
-	db.find("liu","yan",{},{"displayNum":0,"pagesNum":0},(err,result)=>{
+	console.log(req.body.page)
+	db.find("liu","yan",{},{"displayNum":6,"pagesNum":(parseInt(req.body.page)-1)*6,"sort":{"shijian":-1}},(err,result)=>{
 		if(err){
 			res.send({"status":0,request:null,data:"失败"})
 		}else{
@@ -35,6 +41,21 @@ server.post("/du",(req,res)=>{
 		
 	})
 });
+server.post('/count',(req,res)=>{//获取总数量
+	db.getCount("liu","yan",(err,result)=>{
+		res.json({"status":1,request:result,data:"成功"});
+	})
+});
+server.post("/delete",(req,res)=>{
+	db.deleteData("liu","yan",{"_id":ObjectId(req.body.dataId)},(err,result)=>{
+		if(err){
+			res.json({"status":0,request:null,data:"失败"})
+		}else{
+			res.json({"status":1,request:result,data:"成功"})
+		}
+		
+	})
+})
 // server.get("/",(req,res)=>{
 // 	db.insertOne("liu","yan",{"name":"小鑫鑫","text":"hello world","id":2},(err,result)=>{
 // 		if(err){

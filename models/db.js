@@ -3,10 +3,6 @@ const url = require("./seting");
 //连接数据库
 function _connectDB(callback){
 	mongoClient.connect(url.url,(err,db)=>{
-		if(err){
-			callback(err,null);
-			db.close();
-		}
 		callback(null,db)
 	})
 };
@@ -75,7 +71,7 @@ exports.find = function(ku,collectionName,json,args,callback){
 			var result = []
 			var displayNum = parseInt(args.displayNum);//页面显示数量
 			var pagesNum = parseInt(args.pagesNum);//页面中的页数
-			var allDatas = dbo.collection(collectionName).find(json).limit(displayNum).skip(pagesNum);
+			var allDatas = dbo.collection(collectionName).find(json).limit(displayNum).skip(pagesNum).sort(args.sort);
 			allDatas.each((err,doc)=>{
 				if(doc!=null){
 					result.push(doc)
@@ -85,6 +81,18 @@ exports.find = function(ku,collectionName,json,args,callback){
 				}
 			})
 		}
+		
+	})
+};
+//总数
+exports.getCount = function(ku,collectionName,callback){
+	_connectDB((err,db)=>{
+		if(err) throw err;
+		var dbo = db.db(ku);
+		dbo.collection(collectionName).count({}).then((count)=>{
+			callback(null,count)
+			db.close()
+		});
 		
 	})
 }
